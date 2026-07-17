@@ -1,10 +1,13 @@
+module console
+
 import cli
 import os
 import v.vmod
+import compiler
 
 const manifest = vmod.decode(@VMOD_FILE) or { panic(err) }
 
-struct Program {
+pub struct Program {
 	cli.Command
 }
 
