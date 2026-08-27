@@ -1,135 +1,179 @@
-# Phi <a href="https://siguici.github.io/phi" title="Phi"><img src="https://github.com/siguici/art/blob/HEAD/images/phi-logo.svg?raw=true" alt="φ" height="24"/></a>
+# Oty 🐘
 
-**Phi** is a modern, high-performance programming language
-designed for simplicity, clarity, and expressive power.  
-Built with ❤️ in [Vlang](https://vlang.io).
+**Oty** is a strongly typed, object-oriented superset of PHP designed to evolve the PHP programming language while preserving its programming model, semantics, and ecosystem.
 
-[![Build Status](https://github.com/siguici/phi/workflows/CI/badge.svg)](https://github.com/siguici/phi/actions)
+Oty extends PHP with an expressive static type system and a concise object-oriented syntax while keeping PHP syntax, data structures, functions, conventions, and object model at its core.
 
----
-
-## 🚀 Features
-
-- ✅ Lightweight and fast by design  
-- ✅ Optional, strong, or dynamic typing  
-- ✅ Clean and minimal syntax  
-- ✅ `.phi` source files  
-- ✅ Web and general-purpose scripting  
-- ✅ Built-in HTTP server  
-- ✅ Native routing, templating, and middleware  
+* 📄 **Pure Source Files:** Oty source files use the `.oty` extension and contain pure Oty code.
+* ⚡ **Native Compiler:** `oty` is a standalone compiler written in [V](https://vlang.io/).
+* 🐘 **PHP Target:** Oty transpiles to standard PHP and runs on the PHP runtime.
+* 🧩 **Object-Oriented by Design:** PHP values can be accessed through an object-oriented syntax while relying on existing PHP operations and functions.
+* ✨ **Concise Syntax:** Semicolons and commas may be omitted when line breaks unambiguously separate statements or elements.
 
 ---
 
-## 🌟 Vision
+## ✨ Type System
 
-**Phi** redefines how code feels to write and read —
-expressive, concise, and powerful.  
-Its architecture is designed for **multi-runtime execution**,
-paving the way for native support in environments like TypeScript, PHP, and Vlang.
+Oty provides a powerful static type system designed around the PHP programming model.
 
----
+### Core Types
 
-## 📦 Installation
+* Type aliases
+* Generic parameters
+* Generic applications
+* Union types
+* Intersection types
+* Type constraints
+* Inferred types
+* Indexed access types
+* Conditional types
+* Mapped types
+* Utility types
+* Template literal types
+* `infer`
+* Opaque types
+* Structs
 
-> ⚠️ **Requires [Vlang](https://vlang.io)**
+### Array Shapes
 
-```bash
-git clone https://github.com/siguici/phi
-cd phi
-v src -o phi
-./phi examples
-````
+Oty supports statically typed PHP arrays using PHP-like array syntax:
 
-Or build for production:
-
-```bash
-v -prod src -o phi
-./phi examples
+```oty
+type User = [
+    'id' => int,
+    'name' => string,
+    'email' => string|null,
+]
 ```
 
-## 🧪 Quick Start
+PHP arrays remain PHP arrays at runtime.
 
-Create a file `hello.phi`:
+---
 
-```phi
-string name = scan 'Enter your name: '
-if name {
-  print 'Hello ', name, '!'
-} else {
-  print "Hello World!"
+## 🧩 Object-Oriented Syntax
+
+Oty provides an object-oriented way to work with PHP values while preserving their underlying PHP semantics.
+
+```oty
+$a = [1, 2, 3]
+
+echo $a->count()
+```
+
+Oty uses existing PHP operations and functions when lowering these expressions rather than introducing a separate runtime or collection system.
+
+---
+
+## 🚀 Quick Start
+
+Create an Oty source file:
+
+```oty
+namespace App\Domain
+
+type UserId = int
+
+type User = [
+    'id' => UserId
+    'name' => string
+]
+
+class UserRepository
+{
+    public function find(UserId $id): User
+    {
+        return [
+            'id' => $id
+            'name' => 'John Doe'
+        ]
+    }
 }
 ```
 
-Then run it:
+Transpile the file:
 
 ```bash
-./phi run hello
+oty path/to/UserRepository.oty
+```
+
+You can also transpile an entire directory:
+
+```bash
+oty path/to/project/
+```
+
+Oty produces standard PHP source files that can be executed by a PHP 8.2+ runtime.
+
+---
+
+## ⚙️ Installation
+
+### Requirements
+
+* PHP 8.2+
+* [V](https://vlang.io/) when building `oty` from source
+
+### Build from Source
+
+```bash
+git clone https://github.com/siguici/oty.git
+cd oty
+
+v -prod . -o oty
+```
+
+Then transpile an Oty file or directory:
+
+```bash
+./oty path/to/file.oty
 ```
 
 ---
 
-## 📄 Language Overview
+## 🐘 PHP Compatibility
 
-**Phi** combines clarity and expressiveness in a clean syntax:
+Oty is designed to work naturally within the existing PHP ecosystem.
 
-```phi
-string hello(string name) {
-    return 'Hello ', name, '!'
-}
+Transpiled code targets standard PHP and can be used with existing PHP applications, libraries, Composer packages, and development tools.
 
-print hello("World")
-```
-
-### Language Features
-
-- `print`, `echo`
-- Functions, conditionals, and loops
-- Optional `$` variable prefix
-- Inline templates (HTML + Phi)
-- Optional and strong typing
-- Built-in access to HTTP and environment data
+The initial target is **PHP 8.2+**. Specific PHP target versions may be introduced as Oty evolves.
 
 ---
 
-## 🔧 Roadmap
+## 💡 Philosophy
 
-- [x] Core parser and runtime
-- [x] Built-in HTTP server
-- [x] Template rendering
-- [ ] Ahead-of-time compilation
-- [ ] Optional VM execution model
-- [ ] Extended standard library
-- [ ] WebSocket support
-- [ ] Session & authentication modules
-- [ ] CLI tooling for scaffolding and dev mode
+> **Oty is PHP, evolved.**
 
----
+Oty takes inspiration from modern language and type-system design without adopting another language's programming model.
 
-## 🧠 Philosophy
+PHP remains the foundation:
 
-**Phi** is about writing **natural, structured, and elegant code**.
+* arrays remain arrays;
+* classes remain classes;
+* objects remain objects;
+* PHP functions remain available;
+* PHP conventions remain conventions;
+* the PHP runtime remains the target.
 
-- No tags
-- No semicolons
-- Just code that feels right
-
-A minimal language for a maximal experience.
-
-> Designed to be **clear to read**, **pleasant to write**, and **powerful to run**.
+Oty improves the way PHP code is written without requiring a new runtime or a separate ecosystem.
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions and ideas!
+Contributions, bug reports, and language proposals are welcome.
 
-- 🛠 Fork this repo
-- 🔧 Make improvements
-- ✅ Test (`v test .`)
-- 📬 Open a pull request
+```bash
+git clone https://github.com/siguici/oty.git
+cd oty
+
+v test .
+```
+
+For significant language changes, please open an issue before submitting a pull request.
 
 ---
 
 ## 📜 License
 
-[MIT](./LICENSE.md) © [Sigui Kessé Emmanuel](https://github.com/siguici)
+MIT © [Sigui Kessé Emmanuel](https://github.com/siguici)

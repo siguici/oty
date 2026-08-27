@@ -1,11 +1,11 @@
 module compiler
 
 import os
-import json
+import json2
 import net.http
 
 const version = '0.1.0'
-const repo = 'siguici/phi'
+const repo = 'siguici/oty'
 
 struct ReleaseAsset {
 	name                 string
@@ -36,7 +36,7 @@ pub fn self_update() {
 		return
 	}
 
-	release := json.decode(Release, resp.body) or {
+	release := json2.decode[Release](resp.body) or {
 		eprintln('❌ JSON error: ${err}')
 		return
 	}
@@ -56,10 +56,10 @@ pub fn self_update() {
 			return
 		}
 	}
-	asset_name := 'phi-${os_name}-${arch}' + if os_name == 'windows' { '.exe' } else { '' }
+	asset_name := 'oty-${os_name}-${arch}' + if os_name == 'windows' { '.exe' } else { '' }
 	*/
 	arch := ''
-	asset_name := 'phi-${os_name}' + if os_name == 'windows' { '.exe' } else { '' }
+	asset_name := 'oty-${os_name}' + if os_name == 'windows' { '.exe' } else { '' }
 
 	mut download_url := ''
 	for a in release.assets {
@@ -92,14 +92,14 @@ pub fn self_update() {
 }
 
 pub fn self_upgrade() {
-	println('🔄 Full Phi upgrade...')
+	println('🔄 Full Oty upgrade...')
 
 	self_update()
 
-	// TODO: update all Phi modules/dependencies
-	println('⬆️ Updating Phi modules...')
-	// os.system("phi modules upgrade")
-	// os.system("phi templates update")
+	// TODO: update all Oty modules/dependencies
+	println('⬆️ Updating Oty modules...')
+	// os.system("oty modules upgrade")
+	// os.system("oty templates update")
 
 	println('✅ Global upgrade terminated.')
 }

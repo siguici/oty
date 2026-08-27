@@ -13,8 +13,8 @@ pub fn run_repl() bool {
 	mut ran := false
 	term.erase_clear()
 	term.set_cursor_position(x: 0, y: 0)
-	term.set_tab_title('Phi')
-	term.set_terminal_title('Phi')
+	term.set_tab_title('Oty')
+	term.set_terminal_title('Oty')
 	println(term.bold(term.hex(color, center_block(logo))))
 	q := term.bg_red(term.white(term.bold(' \\q ')))
 	exit_i := term.bg_red(term.white(term.bold(' exit() ')))
@@ -24,10 +24,10 @@ pub fn run_repl() bool {
 		term.bold(term.hex(color,
 			' ┌────────────────────────────────────────────┐')),
 		term.hex(color, ' │') +
-			term.hex(color, '      Welcome to the ${term.bg_hex(color, term.white(' Phi (φ) '))}') +
-			term.hex(color, ' REPL 🐉') + term.hex(color, '      │'),
+			term.hex(color, '         Welcome to the ${term.bg_hex(color, term.white(' Oty'))}') +
+			term.hex(color, ' REPL 🐘') + term.hex(color, '        │'),
 		term.hex(color, ' │                                            │'),
-		term.hex(color, ' │        The Phi Programming Language        │'),
+		term.hex(color, ' │        The Oty Programming Language        │'),
 		term.hex(color, ' │ A modern, high-performance scripting lang  │'),
 		term.hex(color, ' │ with PHP-inspired syntax & TS-like typing. │'),
 		term.hex(color, ' │                                            │'),

@@ -41,7 +41,7 @@ pub fn Program.new() &Program {
 			cli.Command{
 				name:        'release'
 				description: 'Re-build Ske'
-				usage:       'phi release'
+				usage:       'oty release'
 				execute:     fn (cmd cli.Command) ! {
 					args := cmd.args
 					if args.len >= 1 {
@@ -54,7 +54,7 @@ pub fn Program.new() &Program {
 			cli.Command{
 				name:        'up'
 				description: 'Upgrade the Ske CLI'
-				usage:       'phi up [-version]'
+				usage:       'oty up [-version]'
 				flags:       [
 					cli.Flag{
 						flag:        .string

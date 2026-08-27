@@ -49,8 +49,8 @@ pub fn (r Runtime) eval() ! {
 
 pub fn run(code string, options RuntimeOptions) ! {
 	mut path := code
-	if !os.exists(path) && !path.ends_with('.phi') {
-		path += '.phi'
+	if !os.exists(path) && !path.ends_with('.oty') {
+		path += '.oty'
 	}
 
 	if os.exists(path) {
