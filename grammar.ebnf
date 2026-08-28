@@ -1,6 +1,7 @@
-(* --------------------------------- *)
-(* Grammar Specification         *)
-(* --------------------------------- *)
+(* ================================================================= #
+ *                         GRAMMAR SPECIFICATION                     *
+ *                              Version 0.0                          *
+ * ================================================================= *)
 
 SourceUnit ::= Shebang? TopLevelElement* EOF ;
 
@@ -14,35 +15,56 @@ TopLevelElement
       | ClassLikeDecl
       | FunctionDecl
       | ConstDecl
+      | ExternDecl
+      | HaltCompilerStmt
       | Statement ;
 
-DeclareStmt ::= "declare" "(" DeclareDirectiveList ")" Terminator ;
+(* ----------------------------------------------------------------- *
+ *                        DIRECTIVES & NAMESPACES                    *
+ * ----------------------------------------------------------------- *)
+
+DeclareStmt ::= "declare" "(" DeclareDirectiveList ")" Term ;
 DeclareDirectiveList ::= DeclareDirective ( "," DeclareDirective )* ","? ;
 DeclareDirective ::= Identifier "=" ScalarLiteral ;
 
 NamespaceDecl
-    ::= "namespace" QualifiedName Terminator
+    ::= "namespace" QualifiedName Term
       | "namespace" QualifiedName Block ;
 
 ImportDirective
-    ::= "use" ImportKind? UseClause Term
+    ::= "use" ImportKind? UseClauseList Term
+      | "use" ImportKind? QualifiedName "{" ImportGroupList "}" Term
       | "use" ImportKind? "{" ImportGroupList "}" ( "from" QualifiedName )? Term ;
 
 ImportKind ::= "function" | "const" | "type" ;
 
-UseClause ::= QualifiedName ( "as" Identifier )? ;
 UseClauseList ::= UseClause ( "," UseClause )* ","? ;
-ImportGroupList ::= UseClauseList ;
+UseClause ::= QualifiedName ( "as" Identifier )? ;
 
-TypeDeclStmt ::= "type" Identifier TypeParameters? "=" TypeExpr Term ;
-OpaqueTypeDeclStmt ::= "opaque" "type" Identifier TypeParameters? ( "extends" TypeExpr )? "=" TypeExpr Term ;
+ImportGroupList ::= ImportGroup ( "," ImportGroup )* ","? ;
+ImportGroup ::= QualifiedName ( "as" Identifier )? ;
+
+(* ----------------------------------------------------------------- *
+ *                       OTY TYPE DECLARATIONS                       *
+ * ----------------------------------------------------------------- *)
+
+TypeDeclStmt
+    ::= "type" Identifier TypeParameters? "=" TypeExpr Term ;
+
+OpaqueTypeDeclStmt
+    ::= "opaque" "type" Identifier TypeParameters? ( "extends" TypeExpr )? "=" TypeExpr Term ;
 
 StructDeclStmt
-    ::= Attributes? "struct" Identifier TypeParameters? StructInheritance? Block ;
+    ::= Attributes? StructModifiers? "struct" Identifier TypeParameters?
+        StructExtends? StructImplements? StructBody ;
 
-StructInheritance
-    ::= "extends" QualifiedName
-      | "implements" TypeList ;
+StructModifiers ::= "readonly" ;
+StructExtends ::= "extends" QualifiedName ;
+StructImplements ::= "implements" TypeList ;
+
+(* ----------------------------------------------------------------- *
+ *                       CLASS-LIKE DECLARATIONS                     *
+ * ----------------------------------------------------------------- *)
 
 ClassLikeDecl
     ::= ClassDecl
@@ -52,56 +74,86 @@ ClassLikeDecl
 
 ClassDecl
     ::= Attributes? ClassModifiers? "class" Identifier TypeParameters?
-        ClassExtends? ClassImplements? Block ;
+        ClassExtends? ClassImplements? ClassBody ;
 
 ClassExtends ::= "extends" QualifiedName GenericArguments? ;
 ClassImplements ::= "implements" TypeList ;
 
 InterfaceDecl
-    ::= Attributes? "interface" Identifier TypeParameters?
-        InterfaceExtends? Block ;
+    ::= Attributes? InterfaceModifiers? "interface" Identifier TypeParameters?
+        InterfaceExtends? InterfaceBody ;
 
+InterfaceModifiers ::= "readonly" ;
 InterfaceExtends ::= "extends" TypeList ;
 
 TraitDecl
-    ::= Attributes? "trait" Identifier TypeParameters? Block ;
+    ::= Attributes? "trait" Identifier TypeParameters? TraitBody ;
 
 EnumDecl
-    ::= Attributes? "enum" Identifier EnumBackingType? EnumImplements? Block ;
+    ::= Attributes? "enum" Identifier EnumBackingType?
+        EnumImplements? EnumBody ;
 
-EnumBackingType ::= ":" ("int" | "string") ;
+EnumBackingType ::= ":" ( "int" | "string" ) ;
 EnumImplements ::= "implements" TypeList ;
 
-ClassModifiers ::= Modifier* ;
-Modifiers ::= Modifier* ;
-Modifier ::= "abstract" | "final" | "readonly" | VisibilityModifier | "static" ;
-
-VisibilityModifier ::= "public" | "protected" | "private" ;
+ClassBody ::= "{" ClassMember* "}" ;
+InterfaceBody ::= "{" InterfaceMember* "}" ;
+TraitBody ::= "{" TraitMember* "}" ;
+EnumBody ::= "{" EnumMember* "}" ;
+StructBody ::= "{" StructMember* "}" ;
 
 ClassMember
-    ::= Attributes? PropertyDecl
-      | Attributes? MethodDecl
-      | Attributes? ConstDecl
-      | Attributes? UseTrait
-      | Attributes? RequireStmt
-      | EnumCase ;
+    ::= PropertyDecl
+      | MethodDecl
+      | ConstDecl
+      | UseTrait
+      | RequireStmt
+      | ClassEnumCase ;
 
-InterfaceMember ::= Attributes? MethodDecl ;
-TraitMember ::= Attributes? ( PropertyDecl | MethodDecl | ConstDecl | UseTrait | RequireStmt ) ;
-StructMember ::= Attributes? StructFieldDecl ;
-EnumMember ::= EnumCase | MethodDecl | PropertyDecl | ConstDecl | UseTrait | RequireStmt ;
+InterfaceMember
+    ::= InterfaceMethodDecl
+      | InterfaceConstDecl
+      | InterfacePropertyDecl
+      | RequireStmt ;
 
-EnumCase ::= Attributes? "case" Identifier ( "=" Expression )? Terminator ;
+TraitMember
+    ::= PropertyDecl
+      | MethodDecl
+      | ConstDecl
+      | UseTrait
+      | RequireStmt ;
+
+StructMember ::= StructFieldDecl ;
+
+EnumMember
+    ::= EnumCase
+      | MethodDecl
+      | ConstDecl
+      | UseTrait ;
+
+ClassEnumCase ::= EnumCase ;
+
+EnumCase
+    ::= Attributes? "case" Identifier ( "=" Expression )? Term ;
 
 RequireStmt
     ::= "require" "extends" QualifiedName Term
-      | "require" "implements" QualifiedName Term ;
+      | "require" "implements" QualifiedNameList Term ;
 
-UseTrait ::= "use" QualifiedNameList TraitAdaptations? Term ;
+UseTrait
+    ::= "use" QualifiedNameList TraitAdaptations? Term ;
+
+QualifiedNameList ::= QualifiedName ( "," QualifiedName )* ","? ;
+
 TraitAdaptations ::= "{" TraitAdaptation* "}" ;
+
 TraitAdaptation
     ::= QualifiedName "::" Identifier "insteadof" QualifiedNameList Term
       | QualifiedName ( "::" Identifier )? "as" VisibilityModifier? Identifier? Term ;
+
+(* ----------------------------------------------------------------- *
+ *                      FUNCTIONS & MEMBERS                          *
+ * ----------------------------------------------------------------- *)
 
 FunctionDecl
     ::= Attributes? FunctionModifiers? FunctionKeyword "&"? Identifier
@@ -112,24 +164,33 @@ MethodDecl
         TypeParameters? "(" ParameterList? ")" ReturnTypeClause?
         ( Block | Term ) ;
 
+InterfaceMethodDecl
+    ::= Attributes? MethodModifiers? FunctionKeyword "&"? Identifier
+        TypeParameters? "(" ParameterList? ")" ReturnTypeClause? Term ;
+
 FunctionKeyword ::= "function" | "fn" ;
-FunctionModifiers ::= Modifier* ;
-MethodModifiers ::= Modifier* ;
+
+FunctionModifiers ::= FunctionModifier* ;
+MethodModifiers ::= MethodModifier* ;
+
+FunctionModifier ::= "public" | "protected" | "private" | "abstract" | "final" | "static" ;
+MethodModifier   ::= "public" | "protected" | "private" | "abstract" | "final" | "static" ;
+
+ClassModifiers ::= ClassModifier* ;
+ClassModifier ::= "abstract" | "final" | "readonly" ;
 
 ParameterList ::= Parameter ( "," Parameter )* ","? ;
+
 Parameter
-    ::= Attributes?
-        ParameterModifiers?
-        TypeExpr?
-        "&"?
-        "..."?
-        VariableName
-        ( "=" Expression )? ;
+    ::= Attributes? ParameterModifiers? TypeExpr? "&"? "..."?
+        VariableName ( "=" Expression )? ;
 
 ParameterModifiers ::= VisibilityModifier? "readonly"? ;
+VisibilityModifier ::= "public" | "protected" | "private" ;
 
+(* Property Declarations with PHP 8.4 Property Hooks Support *)
 PropertyDecl
-    ::= "dynamic"? PropertyModifiers TypeExpr? PropertyItem
+    ::= Attributes? PropertyModifiers TypeExpr? PropertyItem
         ( "," PropertyItem )* PropertySuffix ;
 
 PropertyModifiers ::= VisibilityModifier? "static"? "readonly"? ;
@@ -143,8 +204,41 @@ Accessor
 
 AccessorBody ::= "=>" Expression Term | Block | Term ;
 
-ConstDecl ::= Attributes? Modifiers "const" ConstItem ( "," ConstItem )* Term ;
+InterfacePropertyDecl
+    ::= Attributes? VisibilityModifier? "readonly"? TypeExpr VariableName Term ;
+
+ConstDecl
+    ::= Attributes? VisibilityModifier? "const" ConstItem
+        ( "," ConstItem )* Term ;
+
+InterfaceConstDecl
+    ::= Attributes? VisibilityModifier? "const" ConstItem
+        ( "," ConstItem )* Term ;
+
 ConstItem ::= Identifier ( ":" TypeExpr )? "=" Expression ;
+
+VarDeclStmt ::= VariableDeclarationList Term ;
+
+VariableDeclarationList ::= VariableDeclaration ( "," VariableDeclaration )* ","? ;
+
+VariableDeclaration ::= TypeExpr? VariableName ( "=" Expression )? ;
+
+ExternDecl ::= "extern" ExternTarget ;
+
+ExternTarget
+    ::= FunctionDecl
+      | ClassDecl
+      | InterfaceDecl
+      | TraitDecl
+      | EnumDecl
+      | ConstDecl
+      | VarDeclStmt ;
+
+HaltCompilerStmt ::= "__halt_compiler" "(" ")" Term ;
+
+(* ----------------------------------------------------------------- *
+ *                            STATEMENTS                             *
+ * ----------------------------------------------------------------- *)
 
 Statement
     ::= EmptyStmt
@@ -156,7 +250,7 @@ Statement
       | ForStmt
       | ForeachStmt
       | SwitchStmt
-      | TryCatchStmt
+      | TryStmt
       | ReturnStmt
       | BreakStmt
       | ContinueStmt
@@ -171,351 +265,373 @@ Statement
       | LabelStmt
       | ExitStmt
       | IncludeStmt
+      | RequireExpressionStmt
       | FunctionDecl
       | ClassLikeDecl
       | ConstDecl
-      | DeclareStmt ;
+      | DeclareStmt
+      | VarDeclStmt ;
 
 EmptyStmt ::= Term ;
 ExpressionStmt ::= Expression Term ;
-
 Block ::= "{" Statement* "}" ;
 
 IfStmt
-    ::= "if" "(" Expression ")" Block
-        ( "elseif" "(" Expression ")" Block )*
-        ( "else" Block )? ;
+    ::= "if" "(" Expression ")" Statement
+        ( "elseif" "(" Expression ")" Statement )*
+        ( "else" Statement )? ;
 
-WhileStmt ::= "while" "(" Expression ")" Block ;
-DoWhileStmt ::= "do" Block "while" "(" Expression ")" Term ;
+WhileStmt ::= "while" "(" Expression ")" Statement ;
+DoWhileStmt ::= "do" Statement "while" "(" Expression ")" Term ;
 
-ForStmt
-    ::= "for" "(" ForInit? ";" ForCondition? ";" ForUpdate? ")" Block ;
-
+ForStmt ::= "for" "(" ForInit? ";" ForCondition? ";" ForUpdate? ")" Statement ;
 ForInit ::= ExpressionList | VariableDeclarationList ;
 ForCondition ::= ExpressionList ;
 ForUpdate ::= ExpressionList ;
 
-ForeachStmt
-    ::= "foreach" "(" Expression "as" ForeachTarget ")" Block ;
-
+ForeachStmt ::= "foreach" "(" Expression "as" ForeachTarget ")" Statement ;
 ForeachTarget
     ::= "&"? VariableName
       | "&"? VariableName "=>" "&"? VariableName ;
 
 SwitchStmt ::= "switch" "(" Expression ")" "{" CaseClause* "}" ;
-CaseClause ::= ("case" Expression | "default") CaseSeparator Statement* ;
+CaseClause
+    ::= "case" Expression CaseSeparator Statement*
+      | "default" CaseSeparator Statement* ;
 CaseSeparator ::= ":" | ";" ;
 
-TryCatchStmt
-    ::= "try" Block CatchClause* FinallyClause? ;
-
-CatchClause ::= "catch" "(" CatchTypeList VariableName? ")" Block ;
-CatchTypeList ::= TypeExpr ( "|" TypeExpr )* ;
+TryStmt ::= "try" Block CatchClause* FinallyClause? ;
+CatchClause ::= "catch" "(" CatchParameter ")" Block ;
+CatchParameter ::= QualifiedNameList VariableName? ;
 FinallyClause ::= "finally" Block ;
 
 ReturnStmt ::= "return" Expression? Term ;
-BreakStmt ::= "break" Expression? Term ;
-ContinueStmt ::= "continue" Expression? Term ;
+BreakStmt ::= "break" IntegerLiteral? Term ;
+ContinueStmt ::= "continue" IntegerLiteral? Term ;
 ThrowStmt ::= "throw" Expression Term ;
+YieldStmt ::= Expression ;
 
-YieldStmt ::= "yield" YieldValue? Term ;
-YieldValue ::= "from" Expression | Expression ( "=>" Expression )? ;
+GlobalStmt ::= "global" GlobalItem ( "," GlobalItem )* Term ;
+GlobalItem ::= "&"? VariableName ;
 
-GlobalStmt ::= "global" VariableList Term ;
-StaticStmt ::= "static" StaticVariableList Term ;
-UnsetStmt ::= "unset" "(" ExpressionList? ")" Term ;
+StaticStmt ::= "static" StaticVariable ( "," StaticVariable )* Term ;
+StaticVariable ::= VariableName ( "=" Expression )? ;
+
+UnsetStmt ::= "unset" "(" UnsetItem ( "," UnsetItem )* ")" Term ;
+UnsetItem ::= "&"? VariableName | ArrayAccess ;
+
 EchoStmt ::= "echo" ExpressionList Term ;
 PrintStmt ::= "print" Expression Term ;
 GotoStmt ::= "goto" Identifier Term ;
 LabelStmt ::= Identifier ":" ;
-ExitStmt ::= ("exit" | "die") ( "(" Expression? ")" )? Term ;
+ExitStmt ::= ( "exit" | "die" ) ( "(" Expression? ")" | Expression )? Term ;
+
 IncludeStmt ::= IncludeOperator Expression Term ;
 IncludeOperator ::= "include" | "include_once" | "require" | "require_once" ;
+RequireExpressionStmt ::= "require" Expression Term ;
 
-VariableDeclarationList ::= VariableDeclaration ( "," VariableDeclaration )* ;
-VariableDeclaration ::= VariableName ( ":" TypeExpr )? ( "=" Expression )? ;
-StaticVariableList ::= StaticVariable ( "," StaticVariable )* ;
-StaticVariable ::= VariableName ( "=" Expression )? ;
-VariableList ::= VariableName ( "," VariableName )* ;
+(* ----------------------------------------------------------------- *
+ *                            EXPRESSIONS                            *
+ * ----------------------------------------------------------------- *)
 
-Expression ::= YieldExpression ;
-YieldExpression
+Expression ::= YieldExpr ;
+
+YieldExpr
     ::= "yield" "from" Expression
       | "yield" ( Expression ( "=>" Expression )? )?
-      | AssignmentExpression ;
+      | AssignmentExpr ;
 
-AssignmentExpression
-    ::= ConditionalExpression
-        ( AssignmentOperator AssignmentExpression )? ;
+AssignmentExpr ::= TernaryExpr ( AssignmentOperator AssignmentExpr )? ;
 
-ConditionalExpression
-    ::= NullCoalescingExpression
-        ( "?" Expression? ":" Expression )? ;
+AssignmentOperator
+    ::= "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "**=" | ".="
+      | "&=" | "|=" | "^=" | "<<=" | ">>=" | "??=" ;
 
-NullCoalescingExpression
-    ::= LogicalOrExpression ( "??" LogicalOrExpression )* ;
+TernaryExpr ::= PipeExpr ( "?" Expression? ":" TernaryExpr )? ;
 
-LogicalOrExpression
-    ::= LogicalXorExpression ( ( "||" | "or" ) LogicalXorExpression )* ;
+PipeExpr ::= NullCoalescingExpr ( "|>" NullCoalescingExpr )* ;
 
-LogicalXorExpression
-    ::= LogicalAndExpression ( "xor" LogicalAndExpression )* ;
+NullCoalescingExpr ::= LogicalOrExpr ( "??" LogicalOrExpr )* ;
 
-LogicalAndExpression
-    ::= BitwiseOrExpression ( ( "&&" | "and" ) BitwiseOrExpression )* ;
+LogicalOrExpr ::= LogicalXorExpr ( ( "||" | "or" ) LogicalXorExpr )* ;
 
-BitwiseOrExpression
-    ::= BitwiseXorExpression ( "|" BitwiseXorExpression )* ;
+LogicalXorExpr ::= LogicalAndExpr ( "xor" LogicalAndExpr )* ;
 
-BitwiseXorExpression
-    ::= BitwiseAndExpression ( "^" BitwiseAndExpression )* ;
+LogicalAndExpr ::= BitwiseOrExpr ( ( "&&" | "and" ) BitwiseOrExpr )* ;
 
-BitwiseAndExpression
-    ::= EqualityExpression ( "&" EqualityExpression )* ;
+BitwiseOrExpr ::= BitwiseXorExpr ( "|" BitwiseXorExpr )* ;
 
-EqualityExpression
-    ::= RelationalExpression ( EqualityOperator RelationalExpression )* ;
+BitwiseXorExpr ::= BitwiseAndExpr ( "^" BitwiseAndExpr )* ;
 
-EqualityOperator ::= "==" | "!=" | "===" | "!==" | "<>" ;
+BitwiseAndExpr ::= EqualityExpr ( "&" EqualityExpr )* ;
 
-RelationalExpression
-    ::= SpaceshipExpression ( RelationalOperator SpaceshipExpression )* ;
+EqualityExpr
+    ::= RelationalExpr ( ( "==" | "!=" | "===" | "!==" | "<>" | "<=>" ) RelationalExpr )* ;
 
-RelationalOperator ::= "<" | "<=" | ">" | ">=" ;
+RelationalExpr ::= ShiftExpr ( ( "<" | "<=" | ">" | ">=" ) ShiftExpr )* ;
 
-SpaceshipExpression
-    ::= ShiftExpression ( "<=>" ShiftExpression )* ;
+ShiftExpr ::= AdditiveExpr ( ( "<<" | ">>" ) AdditiveExpr )* ;
 
-ShiftExpression
-    ::= AdditiveExpression ( ( "<<" | ">>" ) AdditiveExpression )* ;
+AdditiveExpr ::= MultiplicativeExpr ( ( "+" | "-" | "." ) MultiplicativeExpr )* ;
 
-AdditiveExpression
-    ::= MultiplicativeExpression ( ( "+" | "-" ) MultiplicativeExpression )* ;
+MultiplicativeExpr ::= InstanceofExpr ( ( "*" | "/" | "%" ) InstanceofExpr )* ;
 
-MultiplicativeExpression
-    ::= ExponentiationExpression ( ( "*" | "/" | "%" ) ExponentiationExpression )* ;
+InstanceofExpr ::= UnaryExpr ( "instanceof" TypeReference )? ;
 
-ExponentiationExpression
-    ::= UnaryExpression ( "**" ExponentiationExpression )? ;
+UnaryExpr
+    ::= PrefixOperator UnaryExpr
+      | CastExpr
+      | ErrorSuppressExpr
+      | "clone" UnaryExpr
+      | ExponentExpr ;
 
-UnaryExpression
-    ::= PrefixOperator UnaryExpression
-      | "clone" UnaryExpression
-      | "new" ClassInstantiation
-      | "@" UnaryExpression
-      | "print" UnaryExpression
-      | PostfixExpression ;
+PrefixOperator ::= "!" | "~" | "-" | "+" | "++" | "--" ;
+ErrorSuppressExpr ::= "@" UnaryExpr ;
 
-PrefixOperator ::= "++" | "--" | "+" | "-" | "!" | "~" | CastOperator ;
+CastExpr ::= CastOperator UnaryExpr ;
 
 CastOperator
-    ::= "(int)" | "(float)" | "(string)" | "(array)" | "(object)"
-      | "(bool)" | "(unset)" ;
+    ::= "(" "int" ")"
+      | "(" "float" ")"
+      | "(" "string" ")"
+      | "(" "array" ")"
+      | "(" "object" ")"
+      | "(" "bool" ")"
+      | "(" "unset" ")"
+      | "(" "mixed" ")"
+      | "(" "resource" ")" ;
 
-PostfixExpression
-    ::= PrimaryExpression PostfixOperation* PostfixIncrement? ;
+ExponentExpr ::= PostfixExpr ( "**" UnaryExpr )? ;
 
-PostfixIncrement ::= "++" | "--" ;
+PostfixExpr ::= PrimaryExpr PostfixOperation* PostfixIncrementDecrement? ;
 
 PostfixOperation
-    ::= MethodCall
-      | PropertyAccess
-      | NullsafeMethodCall
-      | NullsafePropertyAccess
-      | StaticCall
-      | StaticPropertyAccess
-      | ClassConstantAccess
+    ::= MemberAccess
+      | NullsafeMemberAccess
+      | StaticAccess
       | ArrayAccess
+      | CallAccess
       | FirstClassCallable ;
 
-MethodCall ::= "->" MemberName "(" ArgumentList? ")" ;
-PropertyAccess ::= "->" MemberName ;
-NullsafeMethodCall ::= "?->" MemberName "(" ArgumentList? ")" ;
-NullsafePropertyAccess ::= "?->" MemberName ;
-StaticCall ::= "::" MemberName "(" ArgumentList? ")" ;
-StaticPropertyAccess ::= "::" VariableName ;
-ClassConstantAccess ::= "::" ( Identifier | "class" ) ;
+MemberAccess ::= "->" MemberName ;
+NullsafeMemberAccess ::= "?->" MemberName ;
+StaticAccess ::= "::" StaticMemberName ;
+
+MemberName ::= Identifier | VariableName | "{" Expression "}" ;
+StaticMemberName ::= Identifier | VariableName | "{" Expression "}" ;
+
 ArrayAccess ::= "[" Expression? "]" ;
-FirstClassCallable ::= ( "->" MemberName | "::" MemberName ) "(...)" ;
+CallAccess ::= "(" ArgumentList? ")" ;
 
-MemberName ::= Identifier | "{" Expression "}" | VariableName ;
+FirstClassCallable
+    ::= "->" MemberName "(...)"
+      | "?->" MemberName "(...)"
+      | "::" StaticMemberName "(...)" ;
 
-PrimaryExpression
+PostfixIncrementDecrement ::= "++" | "--" ;
+
+PrimaryExpr
     ::= VariableName
       | Literal
       | ArrayLiteral
-      | AnonymousClassExpr
+      | ListExpression
+      | ClassConstantFetch
+      | StaticPropertyFetch
+      | FunctionCall
+      | MatchExpr
       | ClosureExpr
       | ArrowFunctionExpr
-      | MatchExpr
-      | ParenthesizedExpression
+      | AnonymousClassExpr
+      | NewExpr
+      | ThrowExpr
       | IssetExpr
       | EmptyExpr
       | EvalExpr
       | ExitExpr
-      | ThrowExpr
-      | ListDestructuring
-      | ArrayDestructuring
-      | CollectExpr
-      | TypeofExpr
-      | KeyofExpr
-      | NewExpr
       | RequireExpr
-      | StaticCall
-      | QualifiedName ;
+      | PrintExpr
+      | ParenthesizedExpr ;
 
-ParenthesizedExpression ::= "(" Expression ")" ;
+FunctionCall ::= CallableName "(" ArgumentList? ")" ;
+CallableName ::= QualifiedName | VariableName ;
 
-FunctionCall ::= CallableName GenericArguments? "(" ArgumentList? ")" ;
-CallableName ::= QualifiedName | PrimaryExpression ;
+ClassConstantFetch ::= TypeReference "::" ( Identifier | "class" ) ;
+StaticPropertyFetch ::= TypeReference "::" VariableName ;
 
-ArgumentList ::= Argument ( "," Argument )* ","? ;
-Argument ::= NamedArgument? SpreadArgument? Expression ;
-NamedArgument ::= Identifier ":" ;
-SpreadArgument ::= "..." ;
+Literal
+    ::= IntegerLiteral
+      | FloatLiteral
+      | StringLiteral
+      | BooleanLiteral
+      | NullLiteral
+      | MagicConstant ;
 
 ArrayLiteral ::= "[" ArrayElementList? "]" ;
-ArrayElementList ::= ArrayElement ( "," ArrayElement )* ","? ;
-ArrayElement ::= ( "..." Expression ) | Expression ( "=>" Expression )? ;
+ArrayElementList ::= ArrayElement ( Separator ArrayElement )* Separator? ;
+ArrayElement
+    ::= SpreadElement
+      | Expression "=>" SpreadableExpression
+      | Expression ;
 
-ListDestructuring ::= "list" "(" DestructItemList? ")" ;
-ArrayDestructuring ::= "[" DestructItemList? "]" ;
-DestructItemList ::= DestructItem ( "," DestructItem )* ","? ;
-DestructItem ::= Empty | ( Expression "=>" )? ( Assignable | SpreadExpression ) ;
-Empty ::= "," ;
+SpreadableExpression ::= "..." Expression | Expression ;
+SpreadElement ::= "..." Expression ;
 
-Assignable
-    ::= VariableName
-      | PropertyAccess
-      | StaticPropertyAccess
-      | ArrayAccess
-      | ListDestructuring
-      | ArrayDestructuring ;
+ListExpression ::= "list" "(" ListItemList? ")" ;
+ListItemList ::= ListItem ( Separator ListItem )* Separator? ;
+ListItem
+    ::= "&"? VariableName
+      | "&"? ArrayAccess
+      | SpreadElement
+      | EmptyListItem ;
 
-SpreadExpression ::= "..." Expression ;
-
-ClosureExpr
-    ::= "static"? "function" "&"? "(" ParameterList? ")" UseClause?
-        ReturnTypeClause? Block ;
-
-UseClause ::= "use" "(" ClosureUseVarList? ")" ;
-ClosureUseVarList ::= ClosureUseVar ( "," ClosureUseVar )* ","? ;
-ClosureUseVar ::= "&"? VariableName ;
-
-ArrowFunctionExpr
-    ::= "static"? "fn" "&"? "(" ParameterList? ")" ReturnTypeClause? "=>" Expression ;
-
-AnonymousClassExpr
-    ::= "new" "class" AnonymousClassBody ;
-
-AnonymousClassBody
-    ::= AnonymousClassExtends? AnonymousClassImplements? Block ;
-
-AnonymousClassExtends ::= "extends" QualifiedName GenericArguments? ;
-AnonymousClassImplements ::= "implements" TypeList ;
-
-ClassInstantiation
-    ::= ( QualifiedName | AnonymousClassExpr | PrimaryExpression )
-        GenericArguments? "(" ArgumentList? ")"? ;
-
-NewExpr ::= "new" ClassInstantiation ;
+EmptyListItem ::= ;
 
 MatchExpr ::= "match" "(" Expression ")" "{" MatchArmList? "}" ;
-MatchArmList ::= MatchArm ( "," MatchArm )* ","? ;
-MatchArm ::= MatchPatternList "=>" Expression ;
-MatchPatternList ::= "default" | Expression ( "," Expression )* ;
+MatchArmList ::= MatchArm ( Separator MatchArm )* Separator? ;
+MatchArm ::= MatchConditionList "=>" Expression ;
+MatchConditionList ::= "default" | Expression ( "," Expression )* ;
+
+ClosureExpr
+    ::= "static"? "function" "&"? "(" ParameterList? ")"
+        UseClause? ReturnTypeClause? Block ;
+
+UseClause ::= "use" "(" ClosureUseList? ")" ;
+ClosureUseList ::= ClosureUse ( "," ClosureUse )* ","? ;
+ClosureUse ::= "&"? VariableName ;
+
+ArrowFunctionExpr
+    ::= "static"? "fn" "&"? "(" ParameterList? ")"
+        ReturnTypeClause? "=>" Expression ;
+
+AnonymousClassExpr ::= "new" "class" AnonymousClassHeader? Block ;
+AnonymousClassHeader ::= "(" ParameterList? ")" ClassExtends? ClassImplements? ;
+
+NewExpr ::= "new" NewTarget ( "(" ArgumentList? ")" )? ;
+NewTarget
+    ::= QualifiedName GenericArguments?
+      | AnonymousClassExpr ;
 
 ThrowExpr ::= "throw" Expression ;
-IssetExpr ::= "isset" "(" ExpressionList? ")" ;
+IssetExpr ::= "isset" "(" IssetArgumentList? ")" ;
+IssetArgumentList ::= IssetArgument ( "," IssetArgument )* ","? ;
+IssetArgument ::= VariableName | ArrayAccess | MemberAccess ;
+
 EmptyExpr ::= "empty" "(" Expression ")" ;
 EvalExpr ::= "eval" "(" Expression ")" ;
-RequireExpr ::= IncludeOperator "(" Expression ")" ;
+ExitExpr ::= ( "exit" | "die" ) ( "(" Expression? ")" )? ;
+RequireExpr ::= IncludeOperator Expression ;
+PrintExpr ::= "print" Expression ;
+ParenthesizedExpr ::= "(" Expression ")" ;
 
-CollectExpr ::= "collect" "(" Expression ")" "->" Identifier ;
-TypeofExpr ::= "typeof" ( Expression | TypeExpr ) ;
-KeyofExpr ::= "keyof" TypeExpr ;
+ArgumentList ::= Argument ( Separator Argument )* Separator? ;
+Argument
+    ::= NamedArgument
+      | UnpackedArgument
+      | Expression ;
+
+NamedArgument ::= Identifier ":" Expression ;
+UnpackedArgument ::= "..." Expression ;
 
 ExpressionList ::= Expression ( "," Expression )* ","? ;
+
+(* ----------------------------------------------------------------- *
+ *                        OTY TYPE SYSTEM                            *
+ * ----------------------------------------------------------------- *)
 
 TypeExpr ::= ConditionalType ;
 
 ConditionalType
-    ::= UnionType
-        ( "extends" TypeExpr "?" TypeExpr ":" TypeExpr )? ;
+    ::= UnionType ( "extends" TypeExpr "?" TypeExpr ":" TypeExpr )? ;
 
 UnionType ::= IntersectionType ( "|" IntersectionType )* ;
+
 IntersectionType ::= PostfixType ( "&" PostfixType )* ;
+
 PostfixType ::= PrimaryType TypePostfix* ;
 
 TypePostfix
     ::= GenericArguments
-      | IndexedAccess
-      | ArrayTypeModifier
-      | NullableModifier ;
+      | IndexedAccessTypeSuffix
+      | ArrayTypeSuffix ;
 
-NullableModifier ::= "?" ;
-ArrayTypeModifier ::= "[" "]" ;
-IndexedAccess ::= "[" TypeExpr "]" ;
+GenericArguments ::= "<" TypeExprList ">" ;
+IndexedAccessTypeSuffix ::= "[" TypeExpr "]" ;
+ArrayTypeSuffix ::= "[" "]" ;
 
 PrimaryType
     ::= PHPType
-      | LiteralType
+      | OtyType
+      | "(" TypeExpr ")" ;
+
+PHPType
+    ::= PHPBuiltinType
+      | PHPSpecialType
+      | QualifiedName ;
+
+PHPBuiltinType
+    ::= "int"
+      | "float"
+      | "string"
+      | "bool"
+      | "array"
+      | "object"
+      | "callable"
+      | "iterable"
+      | "mixed"
+      | "never"
+      | "void"
+      | "null"
+      | "true"
+      | "false"
+      | "resource" ;
+
+PHPSpecialType ::= "self" | "parent" | "static" ;
+
+OtyType
+    ::= LiteralType
       | TupleType
       | ArrayShapeType
       | StructTypeRef
-      | TemplateStringType
+      | TemplateLiteralType
       | KeyOfType
       | TypeOfType
       | InferType
       | MappedType
-      | UtilityType
-      | ParenthesizedType ;
+      | UtilityType ;
 
-PHPType ::= PHPBuiltinType | PHPSpecialType | QualifiedName | GenericType ;
-PHPBuiltinType
-    ::= "int" | "float" | "string" | "bool" | "true" | "false"
-      | "array" | "object" | "callable" | "iterable" | "mixed"
-      | "never" | "void" | "null" ;
-
-PHPSpecialType ::= "self" | "parent" | "static" ;
-GenericType ::= QualifiedName GenericArguments ;
-GenericArguments ::= "<" TypeExprList ">" ;
-TypeExprList ::= TypeExpr ( "," TypeExpr )* ","? ;
-
-ParenthesizedType ::= "(" TypeExpr ")" ;
-
-LiteralType ::= IntegerLiteral | FloatLiteral | StringLiteral | BooleanLiteral ;
+LiteralType
+    ::= IntegerLiteral
+      | FloatLiteral
+      | StringLiteral
+      | BooleanLiteral ;
 
 TupleType ::= "[" TupleElementList? "]" ;
 TupleElementList ::= TupleElement ( Separator TupleElement )* Separator? ;
 TupleElement ::= ( Identifier ":" )? TypeExpr "?"? ;
 
-ArrayShapeType ::= "[" ShapeFieldList? "]" ;
+ArrayShapeType ::= "array" "{" ShapeFieldList? "}" ;
 ShapeFieldList ::= ShapeField ( Separator ShapeField )* Separator? ;
-ShapeField ::= KeyExpr "=>" TypeExpr ;
-KeyExpr ::= ( Identifier | StringLiteral | IntegerLiteral ) "?"? ;
+ShapeField ::= ShapeKey "?"? ":" TypeExpr ;
+ShapeKey ::= Identifier | StringLiteral | IntegerLiteral ;
 
 StructTypeRef ::= "struct" "{" StructFieldList? "}" ;
-StructFieldList ::= StructField ( Separator StructField )* Separator? ;
-StructField ::= VisibilityModifier? "readonly"? Identifier "?"? ":" TypeExpr ;
+StructFieldList ::= StructFieldType ( Separator StructFieldType )* Separator? ;
+StructFieldType ::= Identifier "?"? ":" TypeExpr ;
 
-TemplateStringType ::= "`" TemplateComponent* "`" ;
+TemplateLiteralType ::= "`" TemplateComponent* "`" ;
 TemplateComponent ::= TemplateText | "${" TypeExpr "}" ;
-TemplateText ::= TemplateTextCharacter+ ;
 
 KeyOfType ::= "keyof" TypeExpr ;
-TypeOfType ::= "typeof" ( QualifiedName | VariableName | Expression ) ;
+TypeOfType ::= "typeof" ( QualifiedName | VariableName | RequireExpr ) ;
 InferType ::= "infer" Identifier ;
 
 MappedType
-    ::= "{"
-        "[" Identifier "in" TypeExpr ( "as" TypeExpr )? "]"
-        MappedModifier*
-        ":" TypeExpr
-        "}" ;
+    ::= "{" "[" Identifier "in" TypeExpr ( "as" TypeExpr )? "]"
+        MappedModifier* ":" TypeExpr "}" ;
 
-MappedModifier ::= "+"? "-"? ("readonly" | "?") ;
+MappedModifier
+    ::= "+"? "readonly" | "-" "readonly"
+      | "+"? "?" | "-" "?" ;
 
 UtilityType
     ::= "Readonly" "<" TypeExpr ">"
@@ -526,17 +642,12 @@ UtilityType
       | "Record" "<" TypeExpr "," TypeExpr ">"
       | "NonNullable" "<" TypeExpr ">"
       | "ReturnType" "<" TypeExpr ">"
-      | "Parameters" "<" TypeExpr ">" ;
-
-StructFieldDecl
-    ::= VisibilityModifier? "readonly"? Identifier "?"? ":" TypeExpr
-        ( "=" Expression )? Term ;
-
-Separator ::= "," | NEWLINE ;
-Term ::= ";" | NEWLINE ;
+      | "Parameters" "<" TypeExpr ">"
+      | "Awaited" "<" TypeExpr ">"
+      | "InstanceType" "<" TypeExpr ">" ;
 
 TypeList ::= TypeExpr ( "," TypeExpr )* ","? ;
-QualifiedNameList ::= QualifiedName ( "," QualifiedName )* ","? ;
+TypeExprList ::= TypeExpr ( "," TypeExpr )* ","? ;
 
 TypeParameters ::= "<" TypeParameterList ">" ;
 TypeParameterList ::= TypeParameter ( "," TypeParameter )* ","? ;
@@ -544,150 +655,141 @@ TypeParameter ::= Identifier ( "extends" TypeExpr )? ( "=" TypeExpr )? ;
 
 ReturnTypeClause ::= ":" TypeExpr ;
 
-Attributes ::= AttributeGroup+ ;
-AttributeGroup ::= "#[" AttributeList "]" ;
-AttributeList ::= AttributeItem ( "," AttributeItem )* ","? ;
+TypeReference
+    ::= QualifiedName GenericArguments?
+      | "self"
+      | "parent"
+      | "static" ;
+
+(* ----------------------------------------------------------------- *
+ *                       ATTRIBUTES & STRUCTS                        *
+ * ----------------------------------------------------------------- *)
+
+Attribute ::= "#[" AttributeGroup "]" ;
+Attributes ::= Attribute+ ;
+AttributeGroup ::= AttributeItem ( Separator AttributeItem )* Separator? ;
 AttributeItem ::= QualifiedName ( "(" ArgumentList? ")" )? ;
 
-VariableName ::= "$" Identifier | "$" "{" Expression "}" ;
+StructFieldDecl
+    ::= Attributes? VisibilityModifier? "readonly"? TypeExpr VariableName ( "=" Expression )? Term ;
 
-Literal
+(* ----------------------------------------------------------------- *
+ *                        LEXICAL STRUCTURE                          *
+ * ----------------------------------------------------------------- *)
+
+ScalarLiteral
     ::= IntegerLiteral
       | FloatLiteral
       | StringLiteral
-      | BooleanLiteral
-      | NullLiteral
-      | HeredocString
-      | NowdocString
-      | MagicConstant ;
-
-NullLiteral ::= "null" ;
-
-BooleanLiteral ::= "true" | "false" ;
+      | BooleanLiteral ;
 
 IntegerLiteral
-    ::= DecimalLiteral
-      | HexLiteral
-      | BinaryLiteral
-      | OctalLiteral ;
+    ::= DecimalInteger
+      | HexInteger
+      | BinaryInteger
+      | OctalInteger ;
 
-DecimalLiteral ::= Digit+ ("_" Digit+)* ;
-HexLiteral ::= "0" ("x" | "X") HexDigit+ ("_" HexDigit+)* ;
-BinaryLiteral ::= "0" ("b" | "B") BinaryDigit+ ("_" BinaryDigit+)* ;
-OctalLiteral ::= "0" ("o" | "O") OctalDigit+ ("_" OctalDigit+)* ;
+DecimalInteger ::= Digit ( Digit | "_" Digit )* ;
+HexInteger ::= "0" ( "x" | "X" ) HexDigit ( HexDigit | "_" HexDigit )* ;
+BinaryInteger ::= "0" ( "b" | "B" ) BinaryDigit ( BinaryDigit | "_" BinaryDigit )* ;
+OctalInteger ::= "0" ( "o" | "O" ) OctalDigit ( OctalDigit | "_" OctalDigit )* ;
 
 FloatLiteral
-    ::= Digit+ "." Digit+ Exponent?
-      | Digit+ Exponent ;
+    ::= DecimalInteger "." DecimalDigits ExponentPart?
+      | "." DecimalDigits ExponentPart?
+      | DecimalInteger ExponentPart ;
 
-Exponent ::= ("e" | "E") ("+" | "-")? Digit+ ("_" Digit+)* ;
+ExponentPart ::= ( "e" | "E" ) ( "+" | "-" )? DecimalDigits ;
+DecimalDigits ::= Digit ( Digit | "_" Digit )* ;
 
-StringLiteral ::= SingleQuotedString | DoubleQuotedString ;
+BooleanLiteral ::= "true" | "false" ;
+NullLiteral ::= "null" ;
+
+StringLiteral
+    ::= SingleQuotedString
+      | DoubleQuotedString
+      | HeredocString
+      | NowdocString ;
+
 SingleQuotedString ::= "'" SingleQuotedCharacter* "'" ;
-DoubleQuotedString ::= "\"" DoubleQuotedCharacter* "\"" ;
+DoubleQuotedString ::= '"' DoubleQuotedCharacter* '"' ;
 
 HeredocString ::= HeredocStart HeredocBody HeredocEnd ;
 NowdocString ::= NowdocStart NowdocBody NowdocEnd ;
-HeredocStart ::= "<<<" Identifier NEWLINE ;
-NowdocStart ::= "<<<'" Identifier "'" NEWLINE ;
-HeredocEnd ::= Identifier (";")? NEWLINE ;
-NowdocEnd ::= Identifier (";")? NEWLINE ;
+
+HeredocStart ::= "<<<" Identifier LineTerminator ;
+NowdocStart ::= "<<<" "'" Identifier "'" LineTerminator ;
+
 HeredocBody ::= HeredocCharacter* ;
 NowdocBody ::= NowdocCharacter* ;
 
+HeredocEnd ::= Identifier ";"? LineTerminator? ;
+NowdocEnd ::= Identifier ";"? LineTerminator? ;
+
+SingleQuotedCharacter ::= EscapeSequence | SourceCharacterExceptSingleQuote ;
+DoubleQuotedCharacter ::= EscapeSequence | SourceCharacterExceptDoubleQuote ;
+
+HeredocCharacter ::= SourceCharacter ;
+NowdocCharacter ::= SourceCharacter ;
+
+EscapeSequence
+    ::= "\" ( "'" | '"' | "\" | "n" | "r" | "t" | "v" | "e" | "f"
+            | "$" | "x" HexDigit HexDigit
+            | "u" "{" UnicodeScalar "}" ) ;
+
+UnicodeScalar ::= HexDigit HexDigit? HexDigit? HexDigit? HexDigit? HexDigit? ;
+
 MagicConstant
-    ::= "__LINE__" | "__FILE__" | "__DIR__" | "__FUNCTION__"
-      | "__CLASS__" | "__TRAIT__" | "__METHOD__" | "__NAMESPACE__"
-      | "__PROPERTY__" | "__COMPILER_HALT_OFFSET__" ;
+    ::= "__LINE__"
+      | "__FILE__"
+      | "__DIR__"
+      | "__FUNCTION__"
+      | "__CLASS__"
+      | "__TRAIT__"
+      | "__METHOD__"
+      | "__NAMESPACE__"
+      | "__PROPERTY__"
+      | "__COMPILER_HALT_OFFSET__" ;
+
+VariableName ::= "$" Identifier | ImplicitItVariable ;
+ImplicitItVariable ::= "$it" ;
+
+QualifiedName ::= "\\"? Identifier ( "\\" Identifier )* ;
 
 Identifier ::= IdentifierStart IdentifierPart* ;
-QualifiedName ::= "\\"? Identifier ("\\" Identifier)* ;
-
-IdentifierStart ::= Letter | "_" | NonAscii ;
+IdentifierStart ::= Letter | "_" | ExtendedIdentifierStart ;
 IdentifierPart ::= IdentifierStart | Digit ;
+ExtendedIdentifierStart ::= UnicodeIdentifierStart ;
 
+Letter ::= "A".."Z" | "a".."z" ;
 Digit ::= "0".."9" ;
-HexDigit ::= Digit | "a".."f" | "A".."F" ;
+HexDigit ::= Digit | "A".."F" | "a".."f" ;
 BinaryDigit ::= "0" | "1" ;
 OctalDigit ::= "0".."7" ;
-Letter ::= "A".."Z" | "a".."z" ;
-NonAscii ::= #x80..#x10FFFF ;
 
-Shebang ::= "#!" ShebangCharacter* LineTerminator ;
+Separator ::= "," | NEWLINE | "," NEWLINE ;
+Term ::= ";" | NEWLINE ;
 
-Whitespace ::= ( " " | "\t" | "\v" | "\f" )+ ;
+Shebang ::= "#!" ShebangText LineTerminator ;
+
+NEWLINE ::= LineTerminator ;
 LineTerminator ::= "\r\n" | "\r" | "\n" ;
-NEWLINE ::= LineTerminator ( Whitespace | Comment | LineTerminator )* ;
+Whitespace ::= ( " " | "\t" | "\v" | "\f" )+ ;
 
+LineComment ::= "//" CommentText | "#" CommentText ;
+BlockComment ::= "/*" BlockCommentText "*/" ;
 Comment ::= LineComment | BlockComment ;
-LineComment ::= "//" LineCommentCharacter* LineTerminator?
-               | "#" LineCommentCharacter* LineTerminator? ;
-BlockComment ::= "/*" BlockCommentCharacter* "*/" ;
 
-OpenTag ::= "<?php" | "<?=" | "<?" ;
-CloseTag ::= "?>" ;
-InlineHTML ::= InlineHTMLCharacter+ ;
-AlternativeSyntax
-    ::= "endif"
-      | "endwhile"
-      | "endfor"
-      | "endforeach"
-      | "endswitch"
-      | "enddeclare" ;
+CommentText ::= SourceCharacterExceptLineTerminator* ;
+BlockCommentText ::= SourceCharacterExceptBlockCommentEnd* ;
 
-ForbiddenPHPConstruct
-    ::= OpenTag
-      | CloseTag
-      | InlineHTML
-      | AlternativeSyntax ;
+SourceCharacter ::= #x0000..#x10FFFF ;
+SourceCharacterExceptSingleQuote ::= SourceCharacter - "'" ;
+SourceCharacterExceptDoubleQuote ::= SourceCharacter - '"' ;
+SourceCharacterExceptLineTerminator ::= SourceCharacter - "\r" - "\n" ;
+SourceCharacterExceptBlockCommentEnd ::= SourceCharacter ;
 
-AssignmentOperator
-    ::= "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "**=" | ".="
-      | "&=" | "|=" | "^=" | "<<=" | ">>=" | "??=" ;
+TemplateText ::= TemplateCharacter+ ;
+TemplateCharacter ::= SourceCharacter - "`" - "$" ;
 
-SeparatorOrTerm ::= "," | ";" | NEWLINE ;
-
-PHPKeyword
-    ::= "abstract" | "and" | "array" | "as" | "break" | "callable" | "case"
-      | "catch" | "class" | "clone" | "const" | "continue" | "declare"
-      | "default" | "die" | "do" | "echo" | "else" | "elseif" | "empty"
-      | "enddeclare" | "endfor" | "endforeach" | "endif" | "endswitch"
-      | "endwhile" | "eval" | "exit" | "extends" | "final" | "finally"
-      | "fn" | "for" | "foreach" | "function" | "global" | "goto" | "if"
-      | "implements" | "include" | "include_once" | "instanceof"
-      | "insteadof" | "interface" | "isset" | "list" | "match" | "namespace"
-      | "new" | "or" | "print" | "private" | "protected" | "public"
-      | "readonly" | "require" | "require_once" | "return" | "static"
-      | "switch" | "throw" | "trait" | "try" | "unset" | "use" | "var"
-      | "while" | "xor" | "yield" ;
-
-OtyKeyword
-    ::= "type" | "struct" | "opaque" | "infer" | "keyof" | "typeof"
-      | "in" | "is" | "collect" ;
-
-BinaryOperator
-    ::= "+" | "-" | "*" | "/" | "%" | "**" | "."
-      | "==" | "!=" | "===" | "!==" | "<>" | "<=>" | "<" | "<=" | ">" | ">="
-      | "<<" | ">>" | "&" | "|" | "^" | "&&" | "||" | "??"
-      | "and" | "or" | "xor" | "instanceof" ;
-
-LineContinuationOperator
-    ::= "+" | "-" | "*" | "/" | "%" | "**" | "." | "&&" | "||"
-      | "|" | "&" | "^" | "??" | "==" | "!=" | "===" | "!==" | "<>"
-      | "<" | "<=" | ">" | ">=" | "<=>" | "<<" | ">>"
-      | "->" | "?->" | "::" | "extends" ;
-
-TerminatingToken
-    ::= VariableName
-      | Literal
-      | Identifier
-      | ")"
-      | "]"
-      | "}"
-      | "++"
-      | "--" ;
-
-ContinuationToken ::= LineContinuationOperator ;
-
-ASITrigger ::= NEWLINE ;
-ACISeparator ::= "," | NEWLINE | "," NEWLINE ;
+EOF ::= ;
