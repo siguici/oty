@@ -90,7 +90,7 @@ fn (mut this Eval) decl_list(item_type string, expr ast.Expr) ! {
 
 fn (mut this Eval) decl_array(key_type string, value_type string, expr ast.Expr) ! {
 	type := ArrayType{
-		key_type:   Type.from(key_type)
+		key_type: Type.from(key_type)
 		value_type: Type.from(value_type)
 	}
 	match expr {

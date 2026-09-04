@@ -1,6 +1,7 @@
 module eval
 
 type Value = int | f64 | string | bool | Nil
+
 type BinaryValue = int | string
 
 struct Nil {}

@@ -24,8 +24,8 @@ pub mut:
 pub fn Runtime.new(input string, options RuntimeOptions) Runtime {
 	return Runtime{
 		input: input
-		file:  options.file
-		dir:   options.dir
+		file: options.file
+		dir: options.dir
 	}
 }
 

@@ -9,7 +9,7 @@ pub:
 pub fn Span.new(start Position, end Position) Span {
 	return Span{
 		start: start
-		end:   end
+		end: end
 	}
 }
 
@@ -44,10 +44,10 @@ pub fn (s Span) contains(pos Position) bool {
 	return pos >= s.start && pos <= s.end
 }
 
-pub fn (a Span) < (b Span) bool {
+pub fn (a Span) <(b Span) bool {
 	return a.start < b.start
 }
 
-pub fn (a Span) == (b Span) bool {
+pub fn (a Span) ==(b Span) bool {
 	return a.start == b.start && a.end == b.end
 }

@@ -19,7 +19,7 @@ struct Release {
 
 pub fn do_release() {
 	v := os.real_path(os.getenv_opt('VEXE') or { @VEXE })
-	os.system('${v} retry v -prod -d version=$(git describe --tags) .')
+	os.system('${v} retry v -prod -d version=\$(git describe --tags) .')
 }
 
 pub fn self_upgrade_to(version string) {
@@ -98,6 +98,7 @@ pub fn self_upgrade() {
 
 	// TODO: update all Oty modules/dependencies
 	println('⬆️ Updating Oty modules...')
+
 	// os.system("oty modules upgrade")
 	// os.system("oty templates update")
 

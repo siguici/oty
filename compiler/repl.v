@@ -21,11 +21,8 @@ pub fn run_repl() bool {
 	ctrl_c := term.bg_red(term.white(' Ctrl+C '))
 	manifest := vmod.decode(@VMOD_FILE) or { panic(err) }
 	lines := [
-		term.bold(term.hex(color,
-			' ┌────────────────────────────────────────────┐')),
-		term.hex(color, ' │') +
-			term.hex(color, '         Welcome to the ${term.bg_hex(color, term.white(' Oty'))}') +
-			term.hex(color, ' REPL 🐘') + term.hex(color, '        │'),
+		term.bold(term.hex(color, ' ┌────────────────────────────────────────────┐')),
+		term.hex(color, ' │') + term.hex(color, '         Welcome to the ${term.bg_hex(color, term.white(' Oty'))}') + term.hex(color, ' REPL 🐘') + term.hex(color, '        │'),
 		term.hex(color, ' │                                            │'),
 		term.hex(color, ' │        The Oty Programming Language        │'),
 		term.hex(color, ' │ A modern, high-performance scripting lang  │'),
@@ -33,11 +30,8 @@ pub fn run_repl() bool {
 		term.hex(color, ' │                                            │'),
 		term.hex(color, ' │ No tags, no semicolons—just code naturally.│'),
 		term.hex(color, ' │                                            │'),
-		term.hex(color, ' │') +
-			term.hex(color, '      ${manifest.name} v${manifest.version} — experimental build.') +
-			term.hex(color, '      │'),
-		term.hex(color,
-			' └────────────────────────────────────────────┘'),
+		term.hex(color, ' │') + term.hex(color, '      ${manifest.name} v${manifest.version} — experimental build.') + term.hex(color, '      │'),
+		term.hex(color, ' └────────────────────────────────────────────┘'),
 		'',
 		'Type ${q} or ${exit_i} or press ${ctrl_c} to quit.',
 	]

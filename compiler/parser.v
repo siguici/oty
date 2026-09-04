@@ -242,13 +242,11 @@ fn (this Parser) position() Position {
 }
 
 fn (mut this Parser) expect(type TokenType) !Token {
-	return this.eat_or_fail(type,
-		'${token_to_str(type)} expected but ${this.current().val} provided')!
+	return this.eat_or_fail(type, '${token_to_str(type)} expected but ${this.current().val} provided')!
 }
 
 fn (mut this Parser) expect_any(types []TokenType) !Token {
-	return this.eat_any_or_fail(types,
-		'${tokens_to_str(types)} expected but ${this.current().val} provided')!
+	return this.eat_any_or_fail(types, '${tokens_to_str(types)} expected but ${this.current().val} provided')!
 }
 
 fn (mut this Parser) eat(type TokenType) bool {

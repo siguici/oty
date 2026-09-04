@@ -50,7 +50,7 @@ pub fn Type.from(type string, opt TypeOption) Type {
 		t
 	} else {
 		NamedType{
-			name:     type
+			name: type
 			nullable: opt.nullable
 		}
 	}

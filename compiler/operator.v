@@ -1,7 +1,7 @@
 module compiler
 
 struct OperatorInfo {
-	prec  int    = -1     // precedence
+	prec  int = -1 // precedence
 	assoc string = 'left' // associativity 'left' or 'right'
 }
 
@@ -51,9 +51,7 @@ pub fn Operator.precedence(tok TokenType) int {
 
 pub fn Operator.associativity(tok TokenType) string {
 	return match tok {
-		.power, .question, .plus_assign, .minus_assign, .mul_assign, .div_assign, .mod_assign,
-		.and_assign, .or_assign, .xor_assign, .left_shift_assign, .right_shift_assign,
-		.unsigned_right_shift_assign, .boolean_and_assign, .boolean_or_assign {
+		.power, .question, .plus_assign, .minus_assign, .mul_assign, .div_assign, .mod_assign, .and_assign, .or_assign, .xor_assign, .left_shift_assign, .right_shift_assign, .unsigned_right_shift_assign, .boolean_and_assign, .boolean_or_assign {
 			'right'
 		}
 		else {
@@ -71,9 +69,7 @@ pub fn Operator.is_prefix(tok TokenType) bool {
 
 pub fn Operator.is_assign(tok TokenType) bool {
 	return match tok {
-		.eq, .decl_assign, .plus_assign, .minus_assign, .mul_assign, .div_assign, .mod_assign,
-		.and_assign, .or_assign, .xor_assign, .boolean_and_assign, .boolean_or_assign,
-		.left_shift_assign, .right_shift_assign, .unsigned_right_shift_assign {
+		.eq, .decl_assign, .plus_assign, .minus_assign, .mul_assign, .div_assign, .mod_assign, .and_assign, .or_assign, .xor_assign, .boolean_and_assign, .boolean_or_assign, .left_shift_assign, .right_shift_assign, .unsigned_right_shift_assign {
 			true
 		}
 		else {

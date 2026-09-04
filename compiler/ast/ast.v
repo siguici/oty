@@ -5,9 +5,13 @@ import compiler.core { Span }
 pub const empty_node = Node(EmptyNode(0))
 
 pub type Node = Stmt | Block | EmptyNode
+
 pub type EmptyNode = u8
+
 pub type Stmt = Decl | PrintStmt | IfStmt | ForStmt | Expr
+
 pub type Decl = TypeDecl | VarDecl | ListDecl | ArrayDecl | EnumDecl | FuncDecl | StructDecl
+
 pub type Expr = AssignExpr | BinaryExpr | UnaryExpr | LiteralExpr | ScanExpr
 
 pub struct Block {

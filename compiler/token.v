@@ -3,81 +3,81 @@ module compiler
 import compiler.core { Position }
 
 pub enum TokenType {
-	amp        // &
-	and        // &&
+	amp // &
+	and // &&
 	and_assign // &=
-	arrow      // <-
-	assign     // =
-	at         // @
+	arrow // <-
+	assign // =
+	at // @
 	await
-	backticks          // `ls -la`
-	bit_not            // ~
+	backticks // `ls -la`
+	bit_not // ~
 	boolean_and_assign // &&=
-	boolean_or_assign  // ||=
-	colon              // :
-	comma              // ,
+	boolean_or_assign // ||=
+	colon // :
+	comma // ,
 	comment
-	dec         // --
+	dec // --
 	decl_assign // :=
-	diff        // <>
-	div         // /
-	div_assign  // /=
-	dollar      // $
-	dot         // .
-	dotdot      // ..
-	ellipsis    // ...
+	diff // <>
+	div // /
+	div_assign // /=
+	dollar // $
+	dot // .
+	dotdot // ..
+	ellipsis // ...
 	eof
-	eq                // ==
-	float             // .456
-	ge                // >=
-	gt                // >
-	hash              // #
-	inc               // ++
-	int               // 123
-	lcbr              // {
-	ldoc              // <!
-	le                // <=
-	left_shift        // <<
+	eq // ==
+	float // .456
+	ge // >=
+	gt // >
+	hash // #
+	inc // ++
+	int // 123
+	lcbr // {
+	ldoc // <!
+	le // <=
+	left_shift // <<
 	left_shift_assign // >>=
-	logical_or        // ||
-	lpar              // (
-	lsbr              // [
-	lt                // <
-	ltag              // <?
-	minus             // -
-	minus_assign      // -=
-	mod               // %
-	mod_assign        // %=
-	mul               // *
-	mul_assign        // *=
-	name              // abc
-	ne                // !=
+	logical_or // ||
+	lpar // (
+	lsbr // [
+	lt // <
+	ltag // <?
+	minus // -
+	minus_assign // -=
+	mod // %
+	mod_assign // %=
+	mul // *
+	mul_assign // *=
+	name // abc
+	ne // !=
 	nl
-	not                // !
-	not_in             // !in
-	not_is             // !is
-	number             // 123.456
-	or_assign          // |=
-	pipe               // |
-	plus               // +
-	plus_assign        // +=
-	power              // **
-	question           // ?
-	rcbr               // }
-	rdoc               // !>
-	right_shift        // >>
+	not // !
+	not_in // !in
+	not_is // !is
+	number // 123.456
+	or_assign // |=
+	pipe // |
+	plus // +
+	plus_assign // +=
+	power // **
+	question // ?
+	rcbr // }
+	rdoc // !>
+	right_shift // >>
 	right_shift_assign // <<=
-	rpar               // )
-	rsbr               // ]
-	rtag               // ?>
-	semicolon          // ;
+	rpar // )
+	rsbr // ]
+	rtag // ?>
+	semicolon // ;
 	str_dollar
 	string // "foo"
 	unknown
-	unsigned_right_shift        // >>>
+	unsigned_right_shift // >>>
 	unsigned_right_shift_assign // >>>=
 	whitespace
-	xor        // ^
+	xor // ^
 	xor_assign // ^=
 
 	// Keywords

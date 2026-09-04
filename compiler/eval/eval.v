@@ -52,8 +52,8 @@ pub fn (mut this Eval) init_var(type Type, name string, value Value, span Span) 
 		)
 	} else {
 		this.vars[name] = Var{
-			type:    type
-			value:   value
+			type: type
+			value: value
 			mutable: name.starts_with('\$')
 		}
 	}

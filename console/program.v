@@ -13,36 +13,36 @@ pub struct Program {
 
 pub fn Program.new() &Program {
 	return &Program{cli.Command{
-		name:        manifest.name
-		version:     manifest.version
+		name: manifest.name
+		version: manifest.version
 		description: manifest.description
-		usage:       '[file | -e code]'
-		flags:       [
+		usage: '[file | -e code]'
+		flags: [
 			cli.Flag{
-				flag:        .string
-				name:        'eval'
-				abbrev:      'e'
+				flag: .string
+				name: 'eval'
+				abbrev: 'e'
 				description: 'Evaluate and run inline code.'
 			},
 			cli.Flag{
-				flag:        .bool
-				name:        'repl'
-				abbrev:      'r'
+				flag: .bool
+				name: 'repl'
+				abbrev: 'r'
 				description: 'Start an interactive REPL session.'
 			},
 			cli.Flag{
-				flag:        .bool
-				name:        'conc'
-				abbrev:      'c'
+				flag: .bool
+				name: 'conc'
+				abbrev: 'c'
 				description: 'Run multiple files concurrently.'
 			},
 		]
-		commands:    [
+		commands: [
 			cli.Command{
-				name:        'release'
+				name: 'release'
 				description: 'Re-build Ske'
-				usage:       'oty release'
-				execute:     fn (cmd cli.Command) ! {
+				usage: 'oty release'
+				execute: fn (cmd cli.Command) ! {
 					args := cmd.args
 					if args.len >= 1 {
 						eprintln('❌ Unknown command : ${args[0]}')
@@ -52,18 +52,18 @@ pub fn Program.new() &Program {
 				}
 			},
 			cli.Command{
-				name:        'up'
+				name: 'up'
 				description: 'Upgrade the Ske CLI'
-				usage:       'oty up [-version]'
-				flags:       [
+				usage: 'oty up [-version]'
+				flags: [
 					cli.Flag{
-						flag:        .string
-						name:        'version'
-						abbrev:      'v'
+						flag: .string
+						name: 'version'
+						abbrev: 'v'
 						description: 'The version to upgrade to'
 					},
 				]
-				execute:     fn (cmd cli.Command) ! {
+				execute: fn (cmd cli.Command) ! {
 					args := cmd.args
 					if args.len >= 1 {
 						eprintln('❌ Unknown command : ${args[0]}')
@@ -79,7 +79,7 @@ pub fn Program.new() &Program {
 				}
 			},
 		]
-		execute:     fn (cmd cli.Command) ! {
+		execute: fn (cmd cli.Command) ! {
 			if code := cmd.flags.get_string('eval') {
 				if code != '' {
 					compiler.run_code(code, file: os.args[0], dir: os.getwd()) or { panic(err) }

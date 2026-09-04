@@ -18,8 +18,8 @@ struct CompilerError {
 fn compiler_error(type string, msg string, opts ErrorOptions) CompilerError {
 	return CompilerError{
 		type: type
-		msg:  msg
-		pos:  opts.pos
+		msg: msg
+		pos: opts.pos
 		span: opts.span
 	}
 }

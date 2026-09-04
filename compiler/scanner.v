@@ -25,10 +25,10 @@ pub mut:
 pub fn Scanner.new(input string, options ScannerOptions) Scanner {
 	return Scanner{
 		TextScanner: textscanner.new(input)
-		file:        options.file
-		dir:         options.dir
-		line:        options.line
-		col:         options.col
+		file: options.file
+		dir: options.dir
+		line: options.line
+		col: options.col
 	}
 }
 
@@ -200,8 +200,7 @@ fn (mut this Scanner) scan_string(delimiter int) !string {
 					u8(delimiter).ascii_str()
 				}
 				else {
-					return scanner_error('Cannot escape ${this.peek_u8().ascii_str()}',
-						this.position())
+					return scanner_error('Cannot escape ${this.peek_u8().ascii_str()}', this.position())
 				}
 			}
 
@@ -299,7 +298,7 @@ fn (mut this Scanner) scan_identifier() string {
 
 		for (this.pos < this.ilen || this.peek() != -1)
 			&& (this.current_is_digit() || this.current_is_underscore()
-			|| this.current_is_letter()) {
+				|| this.current_is_letter()) {
 			id += this.current_str()
 			this.col++
 			this.next()
@@ -375,9 +374,9 @@ fn (mut this Scanner) position() Position {
 
 fn (mut this Scanner) position_n(n int) Position {
 	return Position.new(
-		file:   this.file
+		file: this.file
 		offset: this.pos
-		line:   this.line
+		line: this.line
 		column: this.col - n
 	)
 }

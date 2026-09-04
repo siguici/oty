@@ -20,9 +20,9 @@ pub:
 
 pub fn Position.new(opts PositionOptions) Position {
 	return Position{
-		file:   opts.file
+		file: opts.file
 		offset: opts.offset
-		line:   opts.line
+		line: opts.line
 		column: opts.column
 	}
 }
@@ -83,22 +83,22 @@ pub fn min_position(a Position, b Position) Position {
 	return if a.offset < b.offset { a } else { b }
 }
 
-pub fn (a Position) + (b Position) Position {
+pub fn (a Position) +(b Position) Position {
 	return max_position(a, b)
 }
 
-pub fn (a Position) - (b Position) Position {
+pub fn (a Position) -(b Position) Position {
 	return min_position(a, b)
 }
 
-pub fn (a Position) < (b Position) bool {
+pub fn (a Position) <(b Position) bool {
 	if a.file != b.file {
 		return false
 	}
 	return a.line < b.line || (a.line == b.line && a.column < b.column)
 }
 
-pub fn (a Position) == (b Position) bool {
+pub fn (a Position) ==(b Position) bool {
 	if a.file != b.file {
 		return false
 	}
